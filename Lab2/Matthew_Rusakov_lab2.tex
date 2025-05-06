@@ -1,9 +1,9 @@
-\documentclass{article}
-\usepackage{graphicx} % Required for inserting images
+\usepackage{graphicx}
 \usepackage{tabularx}
 \usepackage{amsmath}
 \usepackage[T2A]{fontenc}
 \usepackage[top=5cm,bottom=3cm,right=3cm,left=3cm]{geometry}
+\usepackage[utf8]{inputenc}
 
 \title{Анализ программ - Lab2}
 \author{Матвей Русаков m.rusakov@innopolis.university SD-03}
@@ -11,18 +11,18 @@
 
 \begin{document}
 
-\maketitle
+    \maketitle
 
 
-\section*{Предисловие}
+    \section*{Предисловие}
 
-Материал и скриншоты из гидры я разместил на GitHub, в директории Lab2/lab\_data/ вы можете найти исходник, скриншоты и сишный код мейн функции для каждой из задач
+    Материал и скриншоты из гидры я разместил на GitHub, в директории Lab2/lab\_data/ вы можете найти исходник, скриншоты и сишный код мейн функции для каждой из задач
 
-\section*{Task 0}
+    \section*{Task 0}
 
-\paragraph{Мейн функция} нулевой задачи выглядит вот так:
+    \paragraph{Мейн функция} нулевой задачи выглядит вот так:
 
-\begin{verbatim}
+    \begin{verbatim}
 undefined8 FUN_00101170(void)
 
 {
@@ -42,77 +42,83 @@ undefined8 FUN_00101170(void)
   return 0;
 }
 
-\end{verbatim}
+    \end{verbatim}
 
-\paragraph{Описание}
-\paragraph{}
-Данный код --- это функция на языке C, реализующая проверку флага. Опишем её по шагам:
+    \paragraph{Описание}
 
-\begin{enumerate}
-    \item Выделяется память под строку:
-    \begin{verbatim}
+    \paragraph{}
+    Данный код --- это функция на языке C, реализующая проверку флага. Опишем её по шагам:
+
+    \begin{enumerate}
+        \item Выделяется память под строку:
+        \begin{verbatim}
     __s1 = (char *)malloc(400);
-    \end{verbatim}
-    Здесь выделяются 400 байт для хранения пользовательского ввода.
+        \end{verbatim}
+        Здесь выделяются 400 байт для хранения пользовательского ввода.
 
-    \item Печатается приглашение пользователю:
-    \begin{verbatim}
+        \item Печатается приглашение пользователю:
+        \begin{verbatim}
     printf("%s", "Hello, enter the flag:\n");
-    \end{verbatim}
-    На экран выводится сообщение:
-    \begin{verbatim}
+        \end{verbatim}
+        На экран выводится сообщение:
+        \begin{verbatim}
     Hello, enter the flag:
-    \end{verbatim}
+        \end{verbatim}
 
-    \item Считывается ввод:
-    \begin{verbatim}
+        \item Считывается ввод:
+        \begin{verbatim}
     __isoc99_scanf(&DAT_00102004, __s1);
-    \end{verbatim}
+        \end{verbatim}
 
-    \item Введённая строка сравнивается с жёстко закодированным флагом:
-    \begin{verbatim}
+        \item Введённая строка сравнивается с жёстко закодированным флагом:
+        \begin{verbatim}
     iVar1 = strcmp(__s1, "flag{6057f13c496ecf7fd777ceb9e79ae285}");
-    \end{verbatim}
-    Если строки совпадают (iVar1 == 0), выполняется блок if, иначе --- else.
+        \end{verbatim}
+        Если строки совпадают (iVar1 == 0), выполняется блок if, иначе --- else.
 
-    \item Условие:
-    \begin{verbatim}
+        \item Условие:
+        \begin{verbatim}
     if (iVar1 == 0) 
         printf("%s", &DAT_00102046);
     else
         printf("%s", "TRY HARDER");
-    \end{verbatim}
-    Если строка верная, выводится сообщение по адресу \&DAT\_00102046 (строка "WIN"), иначе выводится сообщение "TRY HARDER".
+        \end{verbatim}
+        Если строка верная, выводится сообщение по адресу \&DAT\_00102046 (строка \("\)WIN\("\)), иначе выводится сообщение \("\)TRY HARDER\("\).
 
-    \item Функция возвращает 0:
-    \begin{verbatim}
+        \item Функция возвращает 0:
+        \begin{verbatim}
     return 0;
-    \end{verbatim}
-\end{enumerate}
+        \end{verbatim}
+    \end{enumerate}
 
-\noindent
-\paragraph{Особенности}
-\begin{itemize}
-    \item Отсутствует освобождение памяти после \texttt{malloc} (утечка памяти);
-    \item Формат ввода не позволяет вводить пробелы (если используется \%s);
-    \item Сравнение производится напрямую, без шифрования или дополнительных преобразований.
-\end{itemize}
+    \noindent
 
-\newpage
-\paragraph{Тестовые запуски}
-\paragraph{}
-\includegraphics[width=0.7\linewidth]{static/solution_task_0.png}
+    \paragraph{Особенности}
+    \begin{itemize}
+        \item Отсутствует освобождение памяти после \texttt{malloc} (утечка памяти);
+        \item Формат ввода не позволяет вводить пробелы (если используется \%s);
+        \item Сравнение производится напрямую, без шифрования или дополнительных преобразований.
+    \end{itemize}
+
+    \newpage
+
+    \paragraph{Тестовые запуски}
+
+    \paragraph{}
+    \includegraphics[width=0.7\linewidth]{static/solution_task_0.png}
 
 
-\section*{Task 1}
-\paragraph{Как выглядит мейн функция} - вы можете найти на гитхабе в референсах. Она слишком длинная, чтобы записывать ее в репорт
-\paragraph{Описание}
+    \section*{Task 1}
 
-Данный код --- это функция на языке C, которая реализует проверку флага, аналогичную предыдущей, но с поэтапной посимвольной проверкой. Опишем её по шагам:
+    \paragraph{Как выглядит мейн функция} - вы можете найти на гитхабе в референсах. Она слишком длинная, чтобы записывать ее в репорт
 
-\begin{enumerate}
-    \item Объявление локальных переменных и инициализация:
-    \begin{verbatim}
+    \paragraph{Описание}
+
+    Данный код --- это функция на языке C, которая реализует проверку флага, аналогичную предыдущей, но с поэтапной посимвольной проверкой. Опишем её по шагам:
+
+    \begin{enumerate}
+        \item Объявление локальных переменных и инициализация:
+        \begin{verbatim}
     int iVar1;
     int local_40;
     int local_3c;
@@ -125,25 +131,27 @@ undefined8 FUN_00101170(void)
     
     local_c = 0;
     local_3c = 0;
-    \end{verbatim}
+        \end{verbatim}
 
-    \item Приветственное сообщение:
-    \begin{verbatim}
+        \item Приветственное сообщение:
+        \begin{verbatim}
     printf("%s",
-      "Hello, this task is very similar to the previous one, but has  some modifications\nenter the flag:\n"
+      "Hello, this task is very similar to the
+      previous one, but has  some
+      modifications\nenter the flag:\n"
     );
-    \end{verbatim}
-    Выводит сообщение с просьбой ввести флаг.
+        \end{verbatim}
+        Выводит сообщение с просьбой ввести флаг.
 
-    \item Чтение посимвольного ввода (38 символов):
-    \begin{verbatim}
+        \item Чтение посимвольного ввода (38 символов):
+        \begin{verbatim}
     for (local_40 = 0; local_40 < 0x26; local_40 = local_40 + 1) {
       __isoc99_scanf(&DAT_00102069, local_38 + local_40);
     }
-    \end{verbatim}
+        \end{verbatim}
 
-    \item Пошаговое посимвольное сравнение (каждый символ сравнивается отдельно через \texttt{strncmp}), например:
-    \begin{verbatim}
+        \item Пошаговое посимвольное сравнение (каждый символ сравнивается отдельно через \texttt{strncmp}), например:
+        \begin{verbatim}
     iVar1 = strncmp("f", local_38, 1);
     if (iVar1 == 0) {
       local_3c = 1;
@@ -154,47 +162,350 @@ undefined8 FUN_00101170(void)
         if (iVar1 == 0) {
           local_3c = 3;
           ...
-    \end{verbatim}
+        \end{verbatim}
 
-    Проверка продолжается символ за символом:
-    \begin{verbatim}
+        Проверка продолжается символ за символом:
+        \begin{verbatim}
     ...
     iVar1 = strncmp("}", acStack_13, 1);
     if (iVar1 == 0) {
       local_3c = 0x26;
     }
-    \end{verbatim}
+        \end{verbatim}
 
-    \item Финальная проверка:
-    \begin{verbatim}
+        \item Финальная проверка:
+        \begin{verbatim}
     if (local_3c == 0x26) {
       printf("%s", &DAT_00102097);
     }
     else {
       printf("%s", "TRY HARDER");
     }
-    \end{verbatim}
+        \end{verbatim}
 
-    \item Возврат из функции:
-    \begin{verbatim}
+        \item Возврат из функции:
+        \begin{verbatim}
     return 0;
-    \end{verbatim}
-\end{enumerate}
+        \end{verbatim}
+    \end{enumerate}
 
-\paragraph{Отличия и особенности}
-\begin{itemize}
-    \item task\_0 считывает строчку - после enter или пробела запустится скрипт дальше, в то время как в task\_1 используется посимвольный ввод
+    \paragraph{Отличия и особенности}
+    \begin{itemize}
+        \item task\_0 считывает строчку - после enter или пробела запустится скрипт дальше, в то время как в task\_1 используется посимвольный ввод
 
-    \item Поскольку флаг состоит из 38 символов, функция будет ждать, пока пользователь не введет 38 символов и только потом запустит дальше
+        \item Поскольку флаг состоит из 38 символов, функция будет ждать, пока пользователь не введет 38 символов и только потом запустит дальше
 
-    \item В task\_1 последовательное, посимвольное сравнение с буквами из правильного флага
+        \item В task\_1 последовательное, посимвольное сравнение с буквами из правильного флага
 
-    \item Флаг для этой задачи немного другой - "flag{444Y0urB4seRBe803g2Usdfd4ds9y1re}"
-\end{itemize}
+        \item Флаг для этой задачи немного другой - flag\{444Y0urB4seRBe803g2Usdfd4ds9y1re\}
+    \end{itemize}
 
-\paragraph{Тестовые запуски}
-\paragraph{}
+    \paragraph{Тестовые запуски}
 
-\includegraphics[width=0.75\linewidth]{static/solution_task_1.png}
+    \paragraph{}
+
+    \includegraphics[width=0.75\linewidth]{static/solution_task_1.png}
+
+
+    \section*{Task 2}
+
+    \paragraph{Мейн}
+    В этой задаче исходный код функции отсутствует, программа не запускается, но есть информация, которую можно посмотреть в ghidra
+
+    \paragraph{Описание}
+    \begin{enumerate}
+        \item Попытка запуска исполняемого файла без прав:
+        \begin{verbatim}
+    m@hp:~/Downloads/1$ ./task_2
+    bash: ./task_2: Permission denied
+        \end{verbatim}
+        Вывод: нет прав на выполнение файла.
+
+        \item Попытка запуска через \texttt{sudo}:
+        \begin{verbatim}
+    m@hp:~/Downloads/1$ sudo ./task_2
+    [sudo] password for m:
+    sudo: ./task_2: command not found
+        \end{verbatim}
+        Вывод: несмотря на \texttt{sudo}, команда не найдена. Файл не является исполняемым бинарником. Далее я посмотрел информацию о файле внутри ghidra, а также попробовал вывести все строчки с помощью команды \texttt{strings}
+        \item Просмотр строк внутри файла через \texttt{strings}:
+        \begin{verbatim}
+    m@hp:~/Downloads/1$ strings task_2
+    Linux
+    Linux
+    1Hello!
+    1Bye-bye :(
+    license=flag{baee49fd4f7009ff6e932463791f28e6}
+    srcversion=FED0633F3F673540E886029
+    depends=
+    retpoline=Y
+    name=task_7
+    vermagic=6.2.0-34-generic SMP preempt mod_unload modversions
+    __fentry__
+    _printk
+    __x86_return_thunk
+    module_layout
+    task_7
+    GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0
+    GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0
+    .shstrtab
+    .note.gnu.build-id
+    .note.Linux
+    .text
+    .rodata.str1.1
+    __mcount_loc
+    .modinfo
+    .return_sites
+    .call_sites
+    __versions
+    __patchable_function_entries
+    .exit.data
+    .init.data
+    .gnu.linkonce.this_module
+    .bss
+    .comment
+    .note.GNU-stack
+        \end{verbatim}
+
+        \item Ключевой момент — найденная строка:
+        \begin{verbatim}
+    license=flag{baee49fd4f7009ff6e932463791f28e6}
+        \end{verbatim}
+    \end{enumerate}
+
+    \vspace{0.5cm}
+
+    \noindent
+
+    \paragraph{Особенности}
+    \begin{itemize}
+        \item Файл \texttt{task\_2} не является обычным исполняемым файлом, а представляет собой скомпилированный модуль ядра Linux.
+        \item Запуск напрямую не работает, потому что модуль нужно загружать через \texttt{insmod} или \texttt{modprobe}, а не исполнять.
+        \item Флаг хранится в строке с \texttt{license} внутри модуля.
+        \item Флаг: flag\{baee49fd4f7009ff6e932463791f28e6\}
+        \item В выводе присутсвует "depends= ...name=task\_7...", возможно этот файл содержит выводы для 7го задания типа "Hello!" и "Bye-bye :$($". Флаг, найденный здесь, возможно, подойдет для решения 7й задачи.
+    \end{itemize}
+
+    \paragraph{Тестовые запуски} были в описании, поэтому прикреплю скриншот из гидры с полем лицензии и флага
+
+    \paragraph{}
+    \includegraphics[width=1\linewidth]{static/solution_task_2.png}
+
+
+    \section*{Task 3}
+
+    \paragraph{Мейн}
+    В этой задаче мы снова имеем дело с модулем ядра, который не запускается напрямую как исполняемый файл, но доступен для анализа через вывод команды \texttt{strings} и в ghidra.
+
+    \paragraph{Описание}
+    \begin{enumerate}
+        \item Попытка запуска файла с правами суперпользователя:
+        \begin{verbatim}
+    m@hp:~/Downloads/1$ sudo ./task_3
+    [sudo] password for m:
+    sudo: ./task_3: command not found
+        \end{verbatim}
+        Вывод: команда не найдена. Скорее всего, файл не является исполняемым бинарником, а модулем ядра.
+
+        \item Просмотр строк в файле через \texttt{strings}:
+        \begin{verbatim}
+    m@hp:~/Downloads/1$ strings task_3
+    Linux
+    Linux
+    AUATI
+    A]A^]1
+    flag
+    itmo
+    6[*] Bye - bye !
+    1reading...
+    1[*] Error assigning Major Number!
+    1[*] Failed to register device class
+    1[*] Failed to create the device
+    G'g/|
+    W[0sd
+    q-fn
+    rEdWcNDyavDSNOdKOC95iTEP8bioF3IPmAKUXx
+    license=GPL
+    description=find the flag
+    srcversion=0765CAD67B0F0DF80A62408
+    depends=
+    retpoline=Y
+    name=task_8
+    vermagic=6.2.0-34-generic SMP preempt mod_unload modversions
+    __register_chrdev
+    __class_create
+    device_create
+    __x86_return_thunk
+    _printk
+    class_destroy
+    __unregister_chrdev
+    device_destroy
+    class_unregister
+    vmalloc
+    __check_object_size
+    _copy_to_user
+    __copy_overflow
+    __fentry__
+    module_layout
+    task_8
+    GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0
+    GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0
+    __UNIQUE_ID_srcversion193
+    __UNIQUE_ID_depends192
+    ____versions
+    __UNIQUE_ID_retpoline191
+    __UNIQUE_ID_name190
+    __UNIQUE_ID_vermagic189
+    _note_10
+    _note_9
+    intro_init
+    fops
+    __key.11
+    my_class
+    intro_exit
+    __UNIQUE_ID___addressable_cleanup_module241
+    __UNIQUE_ID___addressable_init_module240
+    __UNIQUE_ID_license239
+    __UNIQUE_ID_description238
+    __pfx_intro_read
+    __check_object_size
+    __class_create
+    __this_module
+    class_destroy
+    crypted
+    __fentry__
+    _printk
+    __copy_overflow
+    __pfx_init_module
+    major
+    device_create
+    class_unregister
+    __pfx_cleanup_module
+    __x86_return_thunk
+    _copy_to_user
+    __register_chrdev
+    device_destroy
+    vmalloc
+    __unregister_chrdev
+    .symtab
+    .strtab
+    .shstrtab
+    .note.gnu.build-id
+    .note.Linux
+    .rela.text
+    .rela.init.text
+    .rela.exit.text
+    .rodata.str1.1
+    .rodata.str1.8
+    .rela__mcount_loc
+    .rodata
+    .modinfo
+    .rela.return_sites
+    .rela.call_sites
+    __versions
+    .rela__patchable_function_entries
+    .rela.data
+    .rela.exit.data
+    .rela.init.data
+    .rela.gnu.linkonce.this_module
+    .bss
+    .comment
+    .note.GNU-stack
+        \end{verbatim}
+
+        \item Анализ строк:
+        \begin{itemize}
+            \item В выводе присутствует строка \texttt{flag}, но не полный флаг.
+            \item Присутствует строка, напоминающая шифрованные данные:
+            \begin{verbatim}
+        rEdWcNDyavDSNOdKOC95iTEP8bioF3IPmAKUXx
+            \end{verbatim}
+            \item Также указано описание:
+            \begin{verbatim}
+        description=find the flag
+            \end{verbatim}
+        \end{itemize}
+        Предполагаю, что флаг зашифрован и хранится в строке \texttt{crypted}.
+
+        \item После этого, в ghidra, через дизассемблированную фунцию \_\_pfx\_init\_module я нашел функцию \_\_pfx\_intro\_read:
+
+        \begin{verbatim}
+    undefined1 [16] __pfx_intro_read(undefined8 param_1, undefined8 param_2, ulong param_3) {
+  long lVar1;
+  byte bVar2;
+  long lVar3;
+  byte bVar4;
+
+  _printk(&DAT_001006b3);
+  lVar1 = vmalloc(0x27);
+  bVar2 = 0x14;
+  bVar4 = 0x72;
+  lVar3 = 0;
+
+  while (true) {
+    *(byte *)(lVar1 + lVar3) = bVar2 ^ bVar4;
+    if (lVar3 + 1 == 0x26) break;
+    bVar4 = "rEdWcNDyavDSNOdKOC95iTEP8bioF3IPmAKUXx"[lVar3 + 1];
+    bVar2 = crypted[lVar3 + 1];
+    lVar3 = lVar3 + 1;
+  }
+  *(undefined1 *)(lVar1 + 0x26) = 0;
+
+  if (param_3 < 0x28) {
+    __check_object_size(lVar1, param_3, 1);
+    _copy_to_user(param_2, lVar1, param_3);
+  } else {
+    __copy_overflow(0x27, param_3);
+  }
+  return ZEXT816(0);
+}
+        \end{verbatim}
+
+        \item Размышления: Эта функция - дешифратор. Мы можем заметить тут наш зажифрованный флаг, который обнаружили ранее, а также массив \texttt{crypted}. Эта функция посимвольно делает XOR с элементами массива и расшифровывает флаг.
+
+        \item Массив \texttt{crypted} я нашел в сегменте .rodata. Теперь можно составить несложный питон скрипт для дешифровки флага:
+        \begin{verbatim}
+        crypted = [
+    0x14, 0x29, 0x05, 0x30, 0x18, 0x7d, 0x70, 0x4a, 0x03, 0x47,
+    0x27, 0x67, 0x2f, 0x7c, 0x01, 0x2a, 0x78, 0x71, 0x08, 0x57,
+    0x5b, 0x30, 0x73, 0x64, 0x08, 0x04, 0x0a, 0x57, 0x71, 0x03,
+    0x79, 0x34, 0x0f, 0x71, 0x2d, 0x66, 0x6e, 0x05
+]
+
+flag = "rEdWcNDyavDSNOdKOC95iTEP8bioF3IPmAKUXx"
+
+decrypted = ''.join(chr(c ^ ord(f)) for c, f in zip(crypted, flag))
+
+print(f"Decrypted flag: {decrypted}")
+
+        \end{verbatim}
+        \item После дешифровки мы получаем наш флаг - flag\{343b1c4a3ea721b2d640fc8700db0f36\}
+    \end{enumerate}
+
+    \vspace{0.5cm}
+
+    \noindent
+
+    \paragraph{Оссобенности}
+    \begin{itemize}
+        \item Файл \texttt{task\_3} — это модуль ядра Linux.
+        \item Флаг, зашифрован в строке:
+        \begin{verbatim}
+    rEdWcNDyavDSNOdKOC95iTEP8bioF3IPmAKUXx
+        \end{verbatim}
+        \item Метод шифрования - XOR
+        \item После шифрования искомый флаг - flag\{343b1c4a3ea721b2d640fc8700db0f36\}
+        \item В выводе присутсвует "depends= ...name=task\_8...", возможно этот файл содержит выводы для 8го задания
+    \end{itemize}
+
+    \paragraph{Тестовый запуски}
+    Оставлю тут вывод питоновского скрипта
+
+    \paragraph{}
+    \includegraphics[width=1\linewidth]{static/solution_task_3.png}
+
+
+    \section*{Task 4}
+
 
 \end{document}
