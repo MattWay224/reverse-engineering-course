@@ -596,7 +596,7 @@ print(f"Decrypted flag: {decrypted}")
 
     Данный ELF исполняемый файл не запускался на моём компьютере из-за ошибок с библиотекой pyautogui и
     отсутствия файла task\_4.py. Для анализа использовался дизассемблер Ghidra.
-    
+
     \paragraph{Описание}
     Программа task\_5 реализует загрузчик Python-приложения, упакованного с помощью PyInstaller.
     Основная задача - извлечь необходимые файлы во временный каталог, настроить окружение Python и запустить приложение.
@@ -604,29 +604,29 @@ print(f"Decrypted flag: {decrypted}")
     Ключевые компоненты и функциональность
     \begin{itemize}
         \item Точка входа (processEntry)
-                \begin{itemize}
-                    \item Вызывает \texttt{\_\_libc\_start\_main} для инициализации окружения
-                    \item Передаёт управление основной функции \texttt{thunk\_FUN\_00403e50}
-                \end{itemize}
+        \begin{itemize}
+            \item Вызывает \texttt{\_\_libc\_start\_main} для инициализации окружения
+            \item Передаёт управление основной функции \texttt{thunk\_FUN\_00403e50}
+        \end{itemize}
         \item Основная функция \texttt{thunk\_FUN\_00403e50}
-                \begin{itemize}
-                    \item Инициализация буферов и переменных
-                    \item Проверка переменных окружения:
-                        \begin{itemize}
-                            \item \texttt{\_MEIPASS2} - каталог с извлечёнными файлами
-                            \item \texttt{\_PYI\_ONEDIR\_MODE} - режим работы PyInstaller
-                            \item \texttt{\_PYI\_PROCNAME} - имя процесса Linux (устанавливается через prctl)
-                        \end{itemize}
-                \end{itemize}
+        \begin{itemize}
+            \item Инициализация буферов и переменных
+            \item Проверка переменных окружения:
+            \begin{itemize}
+                \item \texttt{\_MEIPASS2} - каталог с извлечёнными файлами
+                \item \texttt{\_PYI\_ONEDIR\_MODE} - режим работы PyInstaller
+                \item \texttt{\_PYI\_PROCNAME} - имя процесса Linux (устанавливается через prctl)
+            \end{itemize}
+        \end{itemize}
         \item Функция инициализации \texttt{FUN\_004086c0} - Конструктор, выполняющий \texttt{\_\_DT\_INIT\_ARRAY}
         до запуска основной функции
         \item Основные функции загрузчика
-                \begin{itemize}
-                    \item Управление архивом PyInstaller
-                    \item Управление переменными окружения
-                    \item Обработка ошибок
-                    \item Управление памятью и очистка временных ресурсов
-                \end{itemize}
+        \begin{itemize}
+            \item Управление архивом PyInstaller
+            \item Управление переменными окружения
+            \item Обработка ошибок
+            \item Управление памятью и очистка временных ресурсов
+        \end{itemize}
 
 
     \end{itemize}
@@ -636,4 +636,76 @@ print(f"Decrypted flag: {decrypted}")
 
 
     \section*{Task 6}
+
+    \paragraph{Мейн информация}
+    Файл представляет собой ELF-бинарник под x86\_64 Linux.
+    При запуске программа предлагает пользователю выбрать один из двух режимов:
+    \begin{itemize}
+        \item \textbf{1. Encrypton} --- зашифровать флаг из файла \texttt{flag.txt} и сохранить в \texttt{encrypted\_flag.txt}
+        \item \textbf{2. Decryption} --- расшифровать содержимое \texttt{encrypted\_flag.txt} и сохранить в \texttt{flag.txt}
+    \end{itemize}
+
+    Вход обрабатывается функцией \texttt{FUN\_001011a0}, основной управляющей логикой занимается \texttt{FUN\_00101460}.
+
+    \paragraph{Анализ шифрования}
+
+    Функция шифрования представлена в дизассемблированном виде в \texttt{FUN\_00101280}.
+    Она применяет к каждому байту входной строки позиционно-зависимое преобразование.
+    Ниже приведена соответствующая формула:
+
+    \[
+        \text{encrypted} = (i \oplus ((c - 0x19) \oplus \sim 0x28)) + 0x48
+    \]
+
+    где:
+    \begin{itemize}
+        \item $c$ — ASCII-код исходного символа
+        \item $i$ — индекс символа в строке
+    \end{itemize}
+
+    Пример кода на C (упрощённо):
+    \begin{verbatim}
+        char c = input[i];
+        char encrypted = (i ^ ((c - 0x19) ^ ~0x28)) + 0x48;
+    \end{verbatim}
+
+    Элементы шифра:
+    \begin{itemize}
+        \item используется XOR с битовой маской
+        \item учитывается позиция символа
+        \item добавлены константные смещения (+0x19, +0x48 и др.)
+    \end{itemize}
+
+    \paragraph{Анализ дешифрования}
+
+    Дешифрование реализовано симметрично в \texttt{FUN\_00101380}.
+    Формула обратного преобразования выглядит так:
+
+    \[
+        \text{original} = (((c - 0x29 - 0x1F) \oplus \sim 0x28) + 0x19) \oplus i
+    \]
+
+    Эквивалентный код на C:
+
+    \begin{verbatim}
+        char c = input[i];
+        char decrypted = (((c - 0x48) ^ ~0x28) + 0x19) ^ i;
+    \end{verbatim}
+
+    Зашифрованный флаг, прочитанный из файла, преобразуется обратно в оригинальную строку и сохраняется в \texttt{flag.txt}.
+
+    \paragraph{Особенности}
+
+    \begin{itemize}
+        \item Используется самодельный криптоалгоритм с симметричным ключом.
+        \item Преобразование для меня очень запутано, но линейно и обратимо.
+        \item Для использования этого алгоритма обязательно использовать txt файлы для инпута и аутпута.
+    \end{itemize}
+
+    \paragraph{Тестовый запуск}
+    \includegraphics[width=1\linewidth]{static/_task_6.png}
+
+    Предполагаю, что я что-то сделал не так, поскольку формулы шифрации и дешифрации противопоставляют друг другу
+
+    \section*{Task 7}
 \end{document}
