@@ -1,0 +1,88 @@
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[russian]{babel}
+
+\title{Отчёт по результатам фаззинга с помощью libfuzzer - Lab7}
+\author{Matthew Rusakov m.rusakov@innopolis.university SD-03}
+\date{May 2025}
+
+\begin{document}
+
+    \maketitle
+
+
+    \section{Инструмент}
+    Для тестирования использовался \textbf{libFuzzer} с подключенными санитайзерами:
+    \begin{itemize}
+        \item AddressSanitizer (ASan) - для обнаружения ошибок работы с памятью
+        \item UndefinedBehaviorSanitizer (UBSan) - для выявления неопределённого поведения
+    \end{itemize}
+
+
+    \section{Найденные проблемы}
+    В ходе тестирования обнаружены следующие критические уязвимости:
+
+    \begin{enumerate}
+        \item \textbf{Heap-buffer-overflow} при обработке неполного токена "nul"
+        \item \textbf{Heap-use-after-free} при обработке массива с пробелом
+        \item \textbf{Bad-free} при обработке пустой строки
+        \item \textbf{Undefined behavior} (применение ненулевого offset к null pointer)
+        \item \textbf{Повторный heap-use-after-free} при обработке пустого массива "[]"
+    \end{enumerate}
+
+
+    \section{Анализ}
+
+    \subsection{Heap-buffer-overflow}
+    Проблема возникает при проверке токена "null".
+    Парсер не проверяет границы входного буфера при последовательном чтении символов:
+    \begin{verbatim}
+        if ((end - state.ptr) < 3 || *(++ state.ptr) != 'u' ||
+            *(++ state.ptr) != 'l' || *(++ state.ptr) != 'l')
+    \end{verbatim}
+
+    \subsection{Heap-use-after-free}
+    Проблема возникает из-за неправильного управления памятью при обработке массивов:
+    \begin{itemize}
+        \item Память освобождается слишком рано (в функции new\_value)
+        \item Последующий код продолжает использовать указатель на освобождённую память
+        \item Особенно проявляется при обработке пробельных символов после закрывающей скобки
+    \end{itemize}
+
+    \subsection{Bad-free}
+    Новая обнаруженная проблема связана с некорректным освобождением памяти при обработке пустых строк:
+    \begin{itemize}
+        \item Парсер пытается освободить память, которая не была выделена через malloc/calloc
+        \item Адрес 0x502000004a2f находится прямо перед выделенной областью (1 байт до 1-байтной области)
+        \item Проблема проявляется на входе "\"\"" (двойные кавычки без содержимого)
+        \item Ошибка возникает в функции json\_value\_free\_ex при освобождении строковых значений
+    \end{itemize}
+
+    \subsection{Undefined behavior}
+    \begin{itemize}
+        \item Тип: Неопределённое поведение (UB)
+        \item Местоположение: json\_fuzz.c:442:65
+        \item Описание: Применение ненулевого смещения к нулевому указателю
+        \item Условия возникновения:
+        \begin{itemize}
+            \item Проявляется при обработке специально сформированных JSON-структур
+            \item Связано с неправильной проверкой указателей при работе с памятью
+        \end{itemize}
+        \item Риски:
+        \begin{itemize}
+            \item Непредсказуемое поведение программы
+            \item Потенциальная уязвимость для атак типа "undefined behavior exploitation"
+        \end{itemize}
+    \end{itemize}
+
+    \section{Выводы}
+    Как и в предыдущих анализах получилось опознать проблемы с парсером: heap-buffer-overflow, heap-use-after-free, undefined behavior, однако в прошлых репортах не получалось обраружить bad-free
+
+
+    \begin{thebibliography}{1}
+        \bibitem{githublink}
+        GitHub Link: https://github.com/MattWay224/reverse-engineering-course
+        В этом репозитории можно найти все лабы и информацию про каждое задание в каждой лабе
+    \end{thebibliography}
+\end{document}

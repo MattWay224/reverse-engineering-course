@@ -1,0 +1,105 @@
+./json_fuzzer corpus -dict=json.dict
+Dictionary: 15 entries
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 949702314
+INFO: Loaded 1 modules   (1087 inline 8-bit counters): 1087 [0x62cbc2612338, 0x62cbc2612777),
+INFO: Loaded 1 PC tables (1087 PCs): 1087 [0x62cbc2612778,0x62cbc2616b68),
+INFO:        0 files found in corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: A corpus is not provided, starting from an empty corpus
+#2	INITED cov: 26 ft: 27 corp: 1/1b exec/s: 0 rss: 61Mb
+#3	NEW    cov: 26 ft: 28 corp: 2/3b lim: 4 exec/s: 0 rss: 61Mb L: 2/2 MS: 1 InsertByte-
+	NEW_FUNC[1/4]: 0x62cbc25c4e98 in default_alloc /home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzz.c:50
+	NEW_FUNC[2/4]: 0x62cbc25c4f08 in default_free /home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzz.c:55
+#4	NEW    cov: 105 ft: 113 corp: 3/6b lim: 4 exec/s: 0 rss: 61Mb L: 3/3 MS: 1 InsertByte-
+	NEW_FUNC[1/2]: 0x62cbc25bc568 in json_value_free_ex /home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzz.c:169
+	NEW_FUNC[2/2]: 0x62cbc25c6c68 in json_value_free /home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzz.c:990
+#6	NEW    cov: 146 ft: 185 corp: 4/8b lim: 4 exec/s: 0 rss: 61Mb L: 2/3 MS: 2 CopyPart-EraseBytes-
+#15	NEW    cov: 146 ft: 187 corp: 5/12b lim: 4 exec/s: 0 rss: 61Mb L: 4/4 MS: 4 ChangeBit-CrossOver-ShuffleBytes-ChangeByte-
+#17	NEW    cov: 164 ft: 217 corp: 6/15b lim: 4 exec/s: 0 rss: 61Mb L: 3/4 MS: 2 InsertByte-ManualDict- DE: "0.5"-
+#19	NEW    cov: 164 ft: 229 corp: 7/19b lim: 4 exec/s: 0 rss: 61Mb L: 4/4 MS: 2 ChangeByte-PersAutoDict- DE: "0.5"-
+#29	NEW    cov: 164 ft: 231 corp: 8/23b lim: 4 exec/s: 0 rss: 61Mb L: 4/4 MS: 5 ChangeByte-ManualDict-ChangeByte-CrossOver-PersAutoDict- DE: ","-"0.5"-
+#30	NEW    cov: 165 ft: 237 corp: 9/25b lim: 4 exec/s: 0 rss: 61Mb L: 2/4 MS: 1 EraseBytes-
+#34	NEW    cov: 165 ft: 239 corp: 10/28b lim: 4 exec/s: 0 rss: 61Mb L: 3/4 MS: 4 EraseBytes-InsertByte-CrossOver-ChangeBit-
+#38	NEW    cov: 176 ft: 250 corp: 11/32b lim: 4 exec/s: 0 rss: 61Mb L: 4/4 MS: 4 CrossOver-InsertByte-EraseBytes-ManualDict- DE: "-1"-
+#43	NEW    cov: 177 ft: 255 corp: 12/36b lim: 4 exec/s: 0 rss: 61Mb L: 4/4 MS: 5 ChangeByte-ChangeASCIIInt-PersAutoDict-ChangeASCIIInt-CrossOver- DE: "0.5"-
+#45	NEW    cov: 177 ft: 260 corp: 13/37b lim: 4 exec/s: 0 rss: 61Mb L: 1/4 MS: 2 ChangeASCIIInt-EraseBytes-
+#56	NEW    cov: 178 ft: 262 corp: 14/41b lim: 4 exec/s: 0 rss: 61Mb L: 4/4 MS: 1 CopyPart-
+#57	NEW    cov: 178 ft: 264 corp: 15/45b lim: 4 exec/s: 0 rss: 61Mb L: 4/4 MS: 1 CopyPart-
+#72	NEW    cov: 183 ft: 269 corp: 16/49b lim: 4 exec/s: 0 rss: 61Mb L: 4/4 MS: 5 ChangeBit-CopyPart-CMP-ChangeBit-ManualDict- DE: "\217\221\236\004"-"null"-
+#78	NEW    cov: 185 ft: 272 corp: 17/53b lim: 4 exec/s: 0 rss: 61Mb L: 4/4 MS: 1 PersAutoDict- DE: "0.5"-
+#79	NEW    cov: 186 ft: 274 corp: 18/57b lim: 4 exec/s: 0 rss: 61Mb L: 4/4 MS: 1 CrossOver-
+#80	NEW    cov: 186 ft: 280 corp: 19/60b lim: 4 exec/s: 0 rss: 61Mb L: 3/4 MS: 1 EraseBytes-
+#86	NEW    cov: 187 ft: 283 corp: 20/64b lim: 4 exec/s: 0 rss: 61Mb L: 4/4 MS: 1 CopyPart-
+#98	NEW    cov: 187 ft: 298 corp: 21/68b lim: 4 exec/s: 0 rss: 61Mb L: 4/4 MS: 2 EraseBytes-CopyPart-
+#147	NEW    cov: 188 ft: 299 corp: 22/70b lim: 4 exec/s: 0 rss: 61Mb L: 2/4 MS: 4 ChangeBit-ChangeBit-PersAutoDict-EraseBytes- DE: "null"-
+#168	REDUCE cov: 188 ft: 299 corp: 22/68b lim: 4 exec/s: 0 rss: 61Mb L: 2/4 MS: 1 EraseBytes-
+#201	NEW    cov: 190 ft: 301 corp: 23/71b lim: 4 exec/s: 0 rss: 61Mb L: 3/4 MS: 3 ShuffleBytes-ShuffleBytes-CrossOver-
+#241	NEW    cov: 191 ft: 302 corp: 24/75b lim: 4 exec/s: 0 rss: 61Mb L: 4/4 MS: 5 ShuffleBytes-CopyPart-PersAutoDict-CrossOver-ChangeBit- DE: "0.5"-
+=================================================================
+==52716==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000004133 at pc 0x62cbc25c4e02 bp 0x7ffdc2aa1910 sp 0x7ffdc2aa1908
+READ of size 1 at 0x502000004133 thread T0
+    #0 0x62cbc25c4e01 in json_parse_ex /home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzz.c:662:55
+    #1 0x62cbc25bc47c in LLVMFuzzerTestOneInput /home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzzer.c:9:25
+    #2 0x62cbc24c9cc4 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzzer+0x57cc4) (BuildId: dfca2a7d1d6aeed25da472132f162c647893b280)
+    #3 0x62cbc24c93b9 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzzer+0x573b9) (BuildId: dfca2a7d1d6aeed25da472132f162c647893b280)
+    #4 0x62cbc24caba5 in fuzzer::Fuzzer::MutateAndTestOne() (/home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzzer+0x58ba5) (BuildId: dfca2a7d1d6aeed25da472132f162c647893b280)
+    #5 0x62cbc24cb705 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile>>&) (/home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzzer+0x59705) (BuildId: dfca2a7d1d6aeed25da472132f162c647893b280)
+    #6 0x62cbc24b89df in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzzer+0x469df) (BuildId: dfca2a7d1d6aeed25da472132f162c647893b280)
+    #7 0x62cbc24e3066 in main (/home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzzer+0x71066) (BuildId: dfca2a7d1d6aeed25da472132f162c647893b280)
+    #8 0x765a1ae2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x765a1ae2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x62cbc24ad9c4 in _start (/home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzzer+0x3b9c4) (BuildId: dfca2a7d1d6aeed25da472132f162c647893b280)
+
+0x502000004133 is located 0 bytes after 3-byte region [0x502000004130,0x502000004133)
+allocated by thread T0 here:
+    #0 0x62cbc257ddf3 in malloc (/home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzzer+0x10bdf3) (BuildId: dfca2a7d1d6aeed25da472132f162c647893b280)
+    #1 0x765a1b2bb903 in operator new(unsigned long) /build/gcc-14-ig5ci0/gcc-14-14.2.0/build/x86_64-linux-gnu/libstdc++-v3/libsupc++/../../../../src/libstdc++-v3/libsupc++/new_op.cc:50:22
+    #2 0x62cbc24c9bd5 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzzer+0x57bd5) (BuildId: dfca2a7d1d6aeed25da472132f162c647893b280)
+    #3 0x62cbc24c93b9 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzzer+0x573b9) (BuildId: dfca2a7d1d6aeed25da472132f162c647893b280)
+    #4 0x62cbc24caba5 in fuzzer::Fuzzer::MutateAndTestOne() (/home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzzer+0x58ba5) (BuildId: dfca2a7d1d6aeed25da472132f162c647893b280)
+    #5 0x62cbc24cb705 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile>>&) (/home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzzer+0x59705) (BuildId: dfca2a7d1d6aeed25da472132f162c647893b280)
+    #6 0x62cbc24b89df in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzzer+0x469df) (BuildId: dfca2a7d1d6aeed25da472132f162c647893b280)
+    #7 0x62cbc24e3066 in main (/home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzzer+0x71066) (BuildId: dfca2a7d1d6aeed25da472132f162c647893b280)
+    #8 0x765a1ae2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x765a1ae2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x62cbc24ad9c4 in _start (/home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzzer+0x3b9c4) (BuildId: dfca2a7d1d6aeed25da472132f162c647893b280)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /home/m/PycharmProjects/reverse-engineering-course/Lab7/json_fuzz.c:662:55 in json_parse_ex
+Shadow bytes around the buggy address:
+  0x502000003e80: fa fa fd fa fa fa fd fa fa fa fd fa fa fa 04 fa
+  0x502000003f00: fa fa 04 fa fa fa fd fa fa fa fd fa fa fa fd fa
+  0x502000003f80: fa fa fd fd fa fa fd fd fa fa fd fa fa fa fd fa
+  0x502000004000: fa fa fd fa fa fa fd fa fa fa fd fa fa fa fd fa
+  0x502000004080: fa fa fd fa fa fa fd fa fa fa fd fa fa fa fd fa
+=>0x502000004100: fa fa fd fa fa fa[03]fa fa fa fa fa fa fa fa fa
+  0x502000004180: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000004200: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000004280: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000004300: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000004380: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==52716==ABORTING
+MS: 2 ShuffleBytes-EraseBytes-; base unit: 2be88ca4242c76e8253ac62474851065032d6833
+0x6e,0x75,0x6c,
+nul
+artifact_prefix='./'; Test unit written to ./crash-d97929517d6d6863e3cd8f8018a96e632369a26d
+Base64: bnVs

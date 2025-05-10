@@ -1,0 +1,29 @@
+--------------------------------
+
+ object[0].name = test
+  string: testjson
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 48.89    0.000462         462         1           execve
+ 17.57    0.000166          13        12           mmap
+  4.55    0.000043          10         4           mprotect
+  4.34    0.000041          10         4           openat
+  4.13    0.000039           9         4           write
+  3.49    0.000033           6         5           fstat
+  2.96    0.000028           9         3           brk
+  2.54    0.000024           6         4           close
+  2.33    0.000022           7         3           read
+  2.22    0.000021          21         1           munmap
+  1.27    0.000012           6         2           pread64
+  1.06    0.000010          10         1         1 access
+  0.95    0.000009           9         1           newfstatat
+  0.74    0.000007           7         1           getrandom
+  0.63    0.000006           6         1           arch_prctl
+  0.63    0.000006           6         1           prlimit64
+  0.63    0.000006           6         1           rseq
+  0.53    0.000005           5         1           set_tid_address
+  0.53    0.000005           5         1           set_robust_list
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000945          18        51         1 total
+Segmentation fault (core dumped)
+
