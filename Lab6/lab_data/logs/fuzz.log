@@ -1,0 +1,61 @@
+Запускаем fuzzing 10 итераций...
+--------------------------------
+
+Unable to parse data
+❗ Итерация 1: бинарник вернул код 1
+Сохраняем провалившийся ввод в crash_1.json
+--------------------------------
+
+ object[0].name = tetetetetetetetetetetetetetetetetetetetetest
+  string: testjson
+./fuzz_json_parser.sh: line 26: 43952 Segmentation fault      (core dumped) ./json_parser fuzz_input.json
+❗ Итерация 2: бинарник вернул код 139
+Сохраняем провалившийся ввод в crash_2.json
+--------------------------------
+
+ object[0].name = test
+  string: testj⁨so󠁰n
+./fuzz_json_parser.sh: line 26: 43963 Segmentation fault      (core dumped) ./json_parser fuzz_input.json
+❗ Итерация 3: бинарник вернул код 139
+Сохраняем провалившийся ввод в crash_3.json
+--------------------------------
+
+Unable to parse data
+❗ Итерация 4: бинарник вернул код 1
+Сохраняем провалившийся ввод в crash_4.json
+--------------------------------
+
+Unable to parse data
+❗ Итерация 5: бинарник вернул код 1
+Сохраняем провалившийся ввод в crash_5.json
+--------------------------------
+
+Unable to parse data
+❗ Итерация 6: бинарник вернул код 1
+Сохраняем провалившийся ввод в crash_6.json
+--------------------------------
+
+Unable to parse data
+❗ Итерация 7: бинарник вернул код 1
+Сохраняем провалившийся ввод в crash_7.json
+--------------------------------
+
+ object[0].name = test
+  string: te󠀁stjson
+./fuzz_json_parser.sh: line 26: 43984 Segmentation fault      (core dumped) ./json_parser fuzz_input.json
+❗ Итерация 8: бинарник вернул код 139
+Сохраняем провалившийся ввод в crash_8.json
+--------------------------------
+
+ object[0].name = testt
+  string: testjson
+./fuzz_json_parser.sh: line 26: 43996 Segmentation fault      (core dumped) ./json_parser fuzz_input.json
+❗ Итерация 9: бинарник вернул код 139
+Сохраняем провалившийся ввод в crash_9.json
+--------------------------------
+
+Unable to parse data
+❗ Итерация 10: бинарник вернул код 1
+Сохраняем провалившийся ввод в crash_10.json
+--------------------------------
+

@@ -1,0 +1,222 @@
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{color}
+\usepackage[T1]{fontenc}
+\geometry{margin=2.5cm}
+\title{Анализ бинарного файла, скомпилированного обычным компилятором - Lab6}
+\author{Matthew Rusakov m.rusakov@innopolis.university SD-03}
+\date{May 2025}
+
+\begin{document}
+    \maketitle
+
+    \section*{Предисловие}
+
+    Я собрал бинарник с помощью команды
+    \begin{verbatim}
+        gcc main.c json_fuzz.c -o json_parser -lm
+    \end{verbatim}
+
+
+    \section{Введение}
+
+    В ходе анализа были использованы следующие средства:
+    \begin{itemize}
+        \item Valgrind — для выявления ошибок работы с памятью и утечек;
+        \item strace — для отслеживания системных вызовов и анализа поведения процесса;
+        \item AddressSanitizer (ASan) — для обнаружения переполнений буфера и некорректного доступа;
+        \item Undefined Behavior Sanitizer (UBSan) — для диагностики неопределённого поведения программы.
+    \end{itemize}
+
+    Отчёт организован по инструментам, с отдельным описанием каждого, результатами тестов, предполагаемыми причинами ошибок и командами для воспроизведения.
+    Отдельное внимание уделено поддержке Control-Flow Integrity (CFI), а также сравнению обычной и afl-инструментированной сборки.
+
+
+    \section{Valgrind}
+
+    \paragraph{Команды запуска} Для анализа с помощью Valgrind использовалась команда:
+    \begin{verbatim}
+    valgrind --leak-check=full --track-origins=yes --log-file=valgrind.log ./json_parser test.json
+    \end{verbatim}
+    Это позволило получить подробный отчёт о проблемах с памятью, включая утечки и некорректные обращения.
+
+    \paragraph{Найдена проблема} Valgrind выявил \textbf{ошибку: Invalid read of size 8}.
+    Это означает, что программа пыталась прочитать данные за пределами выделенного блока памяти, что может приводить к повреждению данных или сбоям.
+
+    \paragraph{Местоположение} Проблема возникла в функции \texttt{json\_value\_free\_ex} по адресу \texttt{0x4b6d848}, примерно на 11 байт за границей 29-байтного блока.
+    Это точно указывает на ошибку в управлении памятью.
+
+    \paragraph{Анализ и причина} Анализ показал, что ошибка связана с некорректной обработкой структуры при освобождении памяти.
+    Вероятно, ошибка возникает из-за неверного расчёта размеров или неправильной итерации по массиву объектов, что приводит к выходу за границы.
+
+
+    \section{Strace}
+
+    \paragraph{Команды запуска} Для анализа системных вызовов использовалась команда:
+    \begin{verbatim}
+            strace -o trace.log ./json_parser test.json
+    \end{verbatim}
+    Это позволило отследить последовательность вызовов и pinpoint момент сбоя.
+
+    \paragraph{Найдена проблема:}
+    было зафиксировано аварийное завершение процесса с \textbf{сегментационной ошибкой (SIGSEGV)}.
+    Это наиболее частый индикатор некорректного доступа к памяти.
+
+    \paragraph{Местоположение} Сбой произошёл сразу после вызова \texttt{write(1, " string: testjson\textbackslash n", 19)}.
+    Это указывает на то, что после печати строки программа попыталась использовать уже освобождённые или повреждённые данные.
+
+    \paragraph{Анализ и причина} Вероятная причина заключается в логической ошибке: либо двойное освобождение памяти, либо выход за границы массива, либо повреждение кучи.
+    Такие ошибки крайне опасны и могут быть использованы для эксплуатации программы.
+
+
+    \section{AddressSanitizer (ASan)}
+
+    \paragraph{Важный момент} проанализовать бинарник с ASan я не смог просто так, потребовалось собрать бинарник заново, с использованием:
+    \begin{verbatim}
+        gcc -fsanitize=address -g main.c json_fuzz.c -o json_parser_asan -lm
+    \end{verbatim}
+
+    \paragraph{Команды запуска} Теперь можно проанализировать с ASan
+    \begin{verbatim}
+        ./json_parser_asan test.json
+    \end{verbatim}
+
+    \paragraph{Найдена проблема}: было обнаружено \textbf{Heap-buffer-overflow}, то есть выход за пределы динамического буфера в куче.
+
+    \paragraph{Местоположение} Ошибка была зафиксирована в файле \texttt{json\_fuzz.c} на строке 200, по адресу \texttt{0x503000000098}, который на 11 байт превышал размер блока.
+
+    \paragraph{Анализ и причина} Ошибка возникает, когда программа не проверяет границы массива, особенно при рекурсивной обработке вложенных JSON-структур.
+    Необходима доработка логики обхода и добавление проверок размеров.
+
+
+    \section{Undefined Behavior Sanitizer (UBSan)}
+
+    \paragraph{Важный момент}: как и для ASan, мне потребовалось заново скомпилировать файлы
+    \begin{verbatim}
+        gcc -fsanitize=undefined -g main.c json_fuzz.c -o json_parser_ubsan -lm
+    \end{verbatim}
+
+    \paragraph{Команды запуска} Теперь можно проанализировать с UBSan:
+    \begin{verbatim}
+        ./json_parser_ubsan test.json
+    \end{verbatim}
+
+    \paragraph{Найдена проблема}: было выявлено \textbf{Member access within misaligned address}, то есть доступ к члену структуры по адресу, который не выровнен по требуемой границе.
+
+    \paragraph{Местоположение} Ошибка возникла в \texttt{json\_fuzz.c}, строка 179, при доступе к полю \texttt{json\_value}.
+
+    \paragraph{Анализ и причина} Скорее всего, проблема вызвана некорректным приведением типов или выделением памяти без учёта требований выравнивания.
+    Такие ошибки могут приводить к падениям на некоторых архитектурах и ухудшению производительности.
+
+
+    \section{Анализ поддержки Control-Flow Integrity (CFI)}
+
+    \paragraph{Команды запуска} Для проверки поддержки CFI использовались команды:
+    \begin{verbatim}
+        readelf -S json_parser | grep -i cfi
+        objdump -h json_parser | grep -i cfi
+        checksec --file=json_parser
+    \end{verbatim}
+
+    Эти инструменты позволяют анализировать бинарный файл на наличие защитных механизмов.
+
+    \paragraph{Проблема и анализ} Проверка показала, что бинарный файл собран с основными мерами защиты (RELRO, Stack Canary, NX, PIE), но \textbf{не использует CFI}.
+    Это делает возможными некоторые типы атак, такие как ROP (Return-Oriented Programming).
+
+    \paragraph{Причина} Поддержка CFI требует специальной сборки с компилятором Clang с флагами \texttt{-fsanitize=cfi -flto -fvisibility=hidden}, а также включения Link-Time Optimization (LTO).
+
+
+    \section{Fuzzing}
+
+    Фаззинг с бинарником, собранным обычным компилятором сильно слабее, чем с AFL, потому что он работает в режиме
+    black-box, то есть без инструментированных хуков, с помощью которых можно найти больше проблем.
+    Для него я использовал Radamsa и shell скрипт для запуска фаззинга:
+
+    \begin{verbatim}
+
+        #!/bin/bash
+
+        ITERATIONS=50
+
+        echo "Запускаем fuzzing $ITERATIONS итераций..."
+
+        for i in $(seq 1 $ITERATIONS); do
+            radamsa test.json > fuzz_input.json
+
+            ./json_parser fuzz_input.json
+
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -ne 0 ]; then
+                echo "❗ Итерация $i: бинарник вернул код $EXIT_CODE"
+                echo "Сохраняем провалившийся ввод в crash_$i.json"
+                cp fuzz_input.json crash_$i.json
+            fi
+        done
+
+        echo "Fuzzing завершен"
+    \end{verbatim}
+
+    Более того, было сложно проводить фаззинг, потому что бинарник даже на валидном жсоне выдавал Segmentation fault:
+    \begin{verbatim}
+        m@hp:~/CLionProjects/4-5-6-7$ cat test.json
+        {"test": "testjson"}
+        m@hp:~/CLionProjects/4-5-6-7$ ./json_parser test.json
+        --------------------------------
+
+         object[0].name = test
+          string: testjson
+        Segmentation fault (core dumped)
+        m@hp:~/CLionProjects/4-5-6-7$
+    \end{verbatim}
+
+    Поэтому итоги фаззинга:
+    \begin{itemize}
+        \item На все валидные json бинарник возвращал код 139 (Segmentation fault), хотя по логам - обрабатывал json
+        \item На все невалидные - просто возвращал код 1 и сообщение "Unable to parse data"
+    \end{itemize}
+
+
+    \section{Выводы}
+
+    Проведённый анализ показал наличие ряда серьёзных проблем:
+    \begin{itemize}
+        \item Чтение и запись за пределами выделенной памяти;
+        \item Утечки памяти;
+        \item Переполнение буфера;
+        \item Невыровненный доступ к структурам;
+        \item Отсутствие механизмов защиты, таких как CFI;
+        \item Segmentation fault даже после полной обработки jsona
+    \end{itemize}
+
+
+    \section{Сравнение уязвимостей в обычной и afl-инструментированной сборке}
+
+    \paragraph{Команды запуска} Для анализа с использованием afl++ применялась команда:
+    \begin{verbatim}
+        afl-fuzz -i inputs -o outputs -- ./json_parser_afl @@
+    \end{verbatim}
+    Это позволило запустить фаззинг с инструментированным бинарником.
+
+    \paragraph{Анализ} В обеих версиях программы удалось воспроизвести ошибки:
+    \begin{itemize}
+        \item Heap-Buffer-Overflow в \texttt{json\_value\_free\_ex};
+        \item Ошибки с повреждёнными указателями, например \texttt{free(): invalid pointer}.
+    \end{itemize}
+    Однако инструментированная сборка позволила выявить дополнительные баги, например:
+    \begin{itemize}
+        \item Heap-Buffer-Overflow при обработке escape-последовательностей \texttt{\textbackslash uXXXX};
+        \item Undefined Behavior с аварийным завершением программы (SIGILL) ещё до начала полноценного фаззинга.
+    \end{itemize}
+
+    \textbf{Вывод:} Использование afl++ и санитайзеров значительно расширяет охват тестирования, позволяя находить более сложные и редкие ошибки, которые не всегда воспроизводимы в стандартной сборке.
+
+    \begin{thebibliography}{1}
+        \bibitem{githublink}
+        GitHub Link: https://github.com/MattWay224/reverse-engineering-course
+        В этом репозитории можно найти все лабы и информацию про каждое задание в каждой лабе
+    \end{thebibliography}
+\end{document}

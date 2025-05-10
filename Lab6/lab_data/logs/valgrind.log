@@ -1,0 +1,38 @@
+==25664== Memcheck, a memory error detector
+==25664== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+==25664== Using Valgrind-3.22.0 and LibVEX; rerun with -h for copyright info
+==25664== Command: ./json_parser test.json
+==25664== 
+--------------------------------
+
+ object[0].name = test
+  string: testjson
+==25664== Invalid read of size 8
+==25664==    at 0x109E3F: json_value_free_ex (in /home/m/CLionProjects/4-5-6-7/json_parser)
+==25664==    by 0x10BEC8: json_value_free (in /home/m/CLionProjects/4-5-6-7/json_parser)
+==25664==    by 0x1098DD: main (in /home/m/CLionProjects/4-5-6-7/json_parser)
+==25664==  Address 0x4b6d848 is 11 bytes after a block of size 29 alloc'd
+==25664==    at 0x4846828: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==25664==    by 0x1099DF: default_alloc (in /home/m/CLionProjects/4-5-6-7/json_parser)
+==25664==    by 0x109A96: json_alloc (in /home/m/CLionProjects/4-5-6-7/json_parser)
+==25664==    by 0x109BEB: new_value (in /home/m/CLionProjects/4-5-6-7/json_parser)
+==25664==    by 0x10AF5F: json_parse_ex (in /home/m/CLionProjects/4-5-6-7/json_parser)
+==25664==    by 0x10BE65: json_parse (in /home/m/CLionProjects/4-5-6-7/json_parser)
+==25664==    by 0x10986D: main (in /home/m/CLionProjects/4-5-6-7/json_parser)
+==25664== 
+==25664== 
+==25664== HEAP SUMMARY:
+==25664==     in use at exit: 118 bytes in 4 blocks
+==25664==   total heap usage: 8 allocs, 4 frees, 5,731 bytes allocated
+==25664== 
+==25664== LEAK SUMMARY:
+==25664==    definitely lost: 40 bytes in 1 blocks
+==25664==    indirectly lost: 78 bytes in 3 blocks
+==25664==      possibly lost: 0 bytes in 0 blocks
+==25664==    still reachable: 0 bytes in 0 blocks
+==25664==         suppressed: 0 bytes in 0 blocks
+==25664== Rerun with --leak-check=full to see details of leaked memory
+==25664== 
+==25664== For lists of detected and suppressed errors, rerun with: -s
+==25664== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
+

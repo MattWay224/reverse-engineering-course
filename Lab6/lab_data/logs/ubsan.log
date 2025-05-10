@@ -1,0 +1,9 @@
+--------------------------------
+
+ object[0].name = test
+  string: testjson
+json_fuzz.c:179:20: runtime error: member access within misaligned address 0x000000000021 for type 'struct json_value', which requires 8 byte alignment
+0x000000000021: note: pointer points here
+<memory cannot be printed>
+Segmentation fault (core dumped)
+
