@@ -13,147 +13,146 @@
 
 \begin{document}
 
-\maketitle
+    \maketitle
 
-\section*{Предисловие}
+    \section*{Предисловие}
 
-Я собрал 4 бинарника:
+    Я собрал 4 бинарника:
 
-\begin{verbatim}
+    \begin{verbatim}
     clang main.c json_fuzz.c -o json_parser -lm
     afl-clang-fast main.c json_fuzz.c -o json_parser_afl -lm
     afl-clang-fast -fsanitize=address main.c json_fuzz.c -o json_parser_afl_asan -lm
     afl-clang-lto -fsanitize=memory main.c json_fuzz.c -o json_parser_msan -lm
-\end{verbatim}
-
-\section{Анализ бинарных файлов}
-
-\subsection{json\_parser (стандартная компиляция)}
-\textbf{\_}
-
-\textbf{Размер:} 25K
-
-\textbf{Инструментация:} Отсутствует
-
-\textbf{Системные вызовы:}
-  \begin{itemize}
-  \item Стандартная последовательность инициализации
-  \item Минимальное использование \texttt{mmap/munmap}
-  \item Нет доступа к \texttt{/proc/self/}
-  \end{itemize}
-
-\textbf{Дизассемблирование:}
-  \begin{itemize}
-  \item Прямые вызовы стандартных библиотечных функций
-  \item Отсутствие проверок памяти
-  \item Чистый стековый фрейм без дополнительной instrumentation
-  \end{itemize}
-
- \textbf{Вывод:} Базовый бинарник без средств диагностики
+    \end{verbatim}
 
 
-\subsection{json\_parser\_afl (только AFL)}
-\textbf{\_}
+    \section{Анализ бинарных файлов}
+
+    \subsection{json\_parser (стандартная компиляция)}
+    \textbf{\_}
+
+    \textbf{Размер:} 25K
+
+    \textbf{Инструментация:} Отсутствует
+
+    \textbf{Системные вызовы:}
+    \begin{itemize}
+        \item Стандартная последовательность инициализации
+        \item Минимальное использование \texttt{mmap/munmap}
+        \item Нет доступа к \texttt{/proc/self/}
+    \end{itemize}
+
+    \textbf{Дизассемблирование:}
+    \begin{itemize}
+        \item Прямые вызовы стандартных библиотечных функций
+        \item Отсутствие проверок памяти
+        \item Чистый стековый фрейм без дополнительной instrumentation
+    \end{itemize}
+
+    \textbf{Вывод:} Базовый бинарник без средств диагностики
+
+    \subsection{json\_parser\_afl (только AFL)}
+    \textbf{\_}
 
 
-\textbf{Размер:} 137K (в 5.5x больше стандартного)
+    \textbf{Размер:} 137K (в 5.5x больше стандартного)
 
-\textbf{Инструментация:}
-  \begin{itemize}
-  \item Добавление coverage-инструментации AFL
-  \item Вставка кода для отслеживания путей выполнения
-  \end{itemize}
+    \textbf{Инструментация:}
+    \begin{itemize}
+        \item Добавление coverage-инструментации AFL
+        \item Вставка кода для отслеживания путей выполнения
+    \end{itemize}
 
-\textbf{Системные вызовы:}
-  \begin{itemize}
-  \item Дополнительные \texttt{mmap} для shared memory
-  \item Чтение/запись в \texttt{.cur\_input} для фаззинга
-  \item Нет санитайзер-специфичных вызовов
-  \end{itemize}
+    \textbf{Системные вызовы:}
+    \begin{itemize}
+        \item Дополнительные \texttt{mmap} для shared memory
+        \item Чтение/запись в \texttt{.cur\_input} для фаззинга
+        \item Нет санитайзер-специфичных вызовов
+    \end{itemize}
 
-\textbf{Дизассемблирование:}
-  \begin{itemize}
-  \item Вставки кода \texttt{\_\_afl\_} для сбора coverage
-  \item Инструментация ветвлений (\texttt{\_\_afl\_prev\_loc})
-  \item Сохранение контекста выполнения между итерациями
-  \end{itemize}
+    \textbf{Дизассемблирование:}
+    \begin{itemize}
+        \item Вставки кода \texttt{\_\_afl\_} для сбора coverage
+        \item Инструментация ветвлений (\texttt{\_\_afl\_prev\_loc})
+        \item Сохранение контекста выполнения между итерациями
+    \end{itemize}
 
-\textbf{Вывод:} Оптимизирован для сбора coverage-данных
+    \textbf{Вывод:} Оптимизирован для сбора coverage-данных
+
+    \subsection{json\_parser\_asan (AFL + ASan)}
+    \textbf{\_}
+
+    \textbf{Размер:} 1.6M (в 64x больше стандартного)
+
+    \textbf{Инструментация:}
+    \begin{itemize}
+        \item Полная memory instrumentation
+        \item Red zones вокруг всех объектов
+        \item Shadow memory mapping
+    \end{itemize}
+
+    \textbf{Системные вызовы:}
+    \begin{itemize}
+        \item Частые \texttt{mmap/munmap} для shadow memory
+        \item Постоянный мониторинг \texttt{/proc/self/maps}
+        \item Пользовательские обработчики сигналов (SIGSEGV)
+        \item \texttt{madvise} для оптимизации доступа к памяти
+    \end{itemize}
+
+    \textbf{Дизассемблирование:}
+    \begin{itemize}
+        \item Вызовы \texttt{\_\_asan\_*} перед каждой операцией с памятью
+        \item Замена стандартных функций на \texttt{\_\_interceptor\_*} версии
+        \item Вставки проверок стека (\texttt{\_\_asan\_stack\_malloc})
+    \end{itemize}
+
+    \textbf{Вывод:} Максимальная детекция ошибок памяти ценой производительности
+
+    \subsection{json\_parser\_msan (AFL + MSan)}
+    \textbf{\_}
+
+    \textbf{Размер:} 1.3M (в 52x больше стандартного)
+
+    \textbf{Инструментация:}
+    \begin{itemize}
+        \item Трассировка неинициализированной памяти
+        \item Shadow memory для отслеживания битов инициализации
+    \end{itemize}
+
+    \textbf{Системные вызовы:}
+    \begin{itemize}
+        \item Схожи с ASan, но менее интенсивные
+        \item Специфичные \texttt{msan\_} обработчики
+        \item Меньше обращений к \texttt{/proc}
+    \end{itemize}
+
+    \textbf{Дизассемблирование:}
+    \begin{itemize}
+        \item Проверки \texttt{\_\_msan\_} при загрузке значений
+        \item Инструментация перемещения памяти (\texttt{memcpy/memset})
+        \item Отсутствие interceptors для файловых операций
+    \end{itemize}
+
+    \textbf{Вывод:} Специализирован на обнаружении use-of-uninitialized-memory
 
 
-\subsection{json\_parser\_asan (AFL + ASan)}
-\textbf{\_}
-
-\textbf{Размер:} 1.6M (в 64x больше стандартного)
-
-\textbf{Инструментация:}
-  \begin{itemize}
-  \item Полная memory instrumentation
-  \item Red zones вокруг всех объектов
-  \item Shadow memory mapping
-  \end{itemize}
-
-\textbf{Системные вызовы:}
-  \begin{itemize}
-  \item Частые \texttt{mmap/munmap} для shadow memory
-  \item Постоянный мониторинг \texttt{/proc/self/maps}
-  \item Пользовательские обработчики сигналов (SIGSEGV)
-  \item \texttt{madvise} для оптимизации доступа к памяти
-  \end{itemize}
-
-\textbf{Дизассемблирование:}
-  \begin{itemize}
-  \item Вызовы \texttt{\_\_asan\_*} перед каждой операцией с памятью
-  \item Замена стандартных функций на \texttt{\_\_interceptor\_*} версии
-  \item Вставки проверок стека (\texttt{\_\_asan\_stack\_malloc})
-  \end{itemize}
-
-\textbf{Вывод:} Максимальная детекция ошибок памяти ценой производительности
-
-
-\subsection{json\_parser\_msan (AFL + MSan)}
-\textbf{\_}
-
-\textbf{Размер:} 1.3M (в 52x больше стандартного)
-
-\textbf{Инструментация:}
-  \begin{itemize}
-  \item Трассировка неинициализированной памяти
-  \item Shadow memory для отслеживания битов инициализации
-  \end{itemize}
-
-\textbf{Системные вызовы:}
-  \begin{itemize}
-  \item Схожи с ASan, но менее интенсивные
-  \item Специфичные \texttt{msan\_} обработчики
-  \item Меньше обращений к \texttt{/proc}
-  \end{itemize}
-
-\textbf{Дизассемблирование:}
-  \begin{itemize}
-  \item Проверки \texttt{\_\_msan\_} при загрузке значений
-  \item Инструментация перемещения памяти (\texttt{memcpy/memset})
-  \item Отсутствие interceptors для файловых операций
-  \end{itemize}
-
-\textbf{Вывод:} Специализирован на обнаружении use-of-uninitialized-memory
-
-\section{Выводы}
-\begin{itemize}
-\item \textbf{Рост размера:} ASan > MSan > AFL > Baseline
-\item \textbf{Накладные расходы:}
-  \begin{itemize}
-  \item ASan добавляет наибольшие overhead
-  \item MSan требует меньше памяти чем ASan
-  \item AFL минимально влияет на runtime-производительность
-  \end{itemize}
-\item \textbf{При каких случаях что лучше использовать:}
-  \begin{itemize}
-  \item Для фаззинга: AFL + ASan (максимальный охват ошибок)
-  \item Для production: Стандартная компиляция или AFL-only
-  \item Для тестирования: MSan для сложных memory-багов
-  \end{itemize}
-\end{itemize}
+    \section{Выводы}
+    \begin{itemize}
+        \item \textbf{Рост размера:} ASan > MSan > AFL > Baseline
+        \item \textbf{Накладные расходы:}
+        \begin{itemize}
+            \item ASan добавляет наибольшие overhead
+            \item MSan требует меньше памяти чем ASan
+            \item AFL минимально влияет на runtime-производительность
+        \end{itemize}
+        \item \textbf{При каких случаях что лучше использовать:}
+        \begin{itemize}
+            \item Для фаззинга: AFL + ASan (максимальный охват ошибок)
+            \item Для production: Стандартная компиляция или AFL-only
+            \item Для тестирования: MSan для сложных memory-багов
+        \end{itemize}
+    \end{itemize}
     \begin{thebibliography}{1}
         \bibitem{githublink}
         GitHub Link: https://github.com/MattWay224/reverse-engineering-course
