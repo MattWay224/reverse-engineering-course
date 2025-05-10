@@ -1,0 +1,198 @@
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath}
+
+\title{Отчёт по реверс-инжинирингу криптографической функции - Lab3}
+\author{Matthew Rusakov m.rusakov@innopolis.university SD-03}
+\date{May 2025}
+
+
+\begin{document}
+
+    \maketitle
+
+    \section*{Предисловие}
+
+    Я проанализировал бинарник тремя способами:
+    \begin{itemize}
+        \item Статический + динамический анализ (динамический анализ не выдал результатов)
+        \item Анализ дизасемблированных функций в ghidra
+        \item Анализ бинарника с помощью доп. утилит
+    \end{itemize}
+
+
+    \section{Анализ с помощью команд в терминале (статический анализ)}
+
+    Команда
+    \begin{verbatim}
+    strings 2 | grep -iE "aes|rsa|des|encrypt|decrypt|crypto|sha|md5"
+    \end{verbatim}
+    не дала никакого аутпута
+
+    Команда
+    \begin{verbatim}
+    rabin2 -i 2
+    \end{verbatim}
+    вывела
+    \begin{verbatim}
+    # Импорты
+[Imports]
+nth vaddr      bind   type   lib name
+―――――――――――――――――――――――――――――――――――――
+1   0x00000000 GLOBAL FUNC       __libc_start_main
+2   0x00000000 WEAK   NOTYPE     _ITM_deregisterTMCloneTable
+3   0x00001070 GLOBAL FUNC       puts
+4   0x00001080 GLOBAL FUNC       __stack_chk_fail
+5   0x00001090 GLOBAL FUNC       memcmp
+6   0x00000000 WEAK   NOTYPE     __gmon_start__
+7   0x00000000 WEAK   NOTYPE     _ITM_registerTMCloneTable
+8   0x00000000 WEAK   FUNC       __cxa_finalize
+    \end{verbatim}
+
+    Команда
+    \begin{verbatim}
+    objdump -x 2 | grep -i openssl
+    \end{verbatim}
+    не вывела ничего
+
+    \paragraph{Вывод}
+    Бинарник не использует стандартные криптографические библиотеки (OpenSSL, libcrypto и т.д.), так как:
+
+    \textbf{strings} не нашёл упоминаний AES, RSA, DES, SHA и т.д.
+
+    \textbf{rabin2 -i} не показал импортов криптографических функций.
+
+    \textbf{objdump} тоже не нашёл ссылок на OpenSSL
+
+    Это значит, что шифрование, скорее всего:
+    \begin{itemize}
+        \item Самописное (например, простой XOR, ROT, замены).
+        \item Встроенное в код (без внешних библиотек).
+        \item Использует базовые алгоритмы (CRC, Base64, кастомные шифры).
+    \end{itemize}
+
+    Для более глубокого анализа я решил дизасемблировать бинарник в ghidra
+
+
+    \section{Анализ дизассемблированных функций в Ghidra}
+
+    В ходе анализа было исследовано несколько функций, извлечённых с помощью дизассемблирования бинарного файла в Ghidra.
+    Цель — определить структуру, поведение и назначение данных функций.
+    Основное внимание уделяется функциям, связанным с криптографической обработкой данных.
+    Как показал анализ, исследуемый код представляет собой собственную реализацию блочного шифра, архитектурно схожую с AES (Advanced Encryption Standard).
+
+    \subsection{Функция \texttt{FUN\_00101caf}}
+
+    Основная управляющая функция, выполняющая следующие шаги:
+    \begin{enumerate}
+        \item Инициализация двух массивов: \texttt{local\_a0} и \texttt{local\_60}, содержащих по 16 слов (64 байта).
+        \item Инициализация ключевого материала (\texttt{local\_c0}, \texttt{local\_d0} и др.).
+        \item Вызов функции \texttt{FUN\_0010167a} — установка начального ключа.
+        \item Вызов функции \texttt{FUN\_0010177e} — основной криптографический процесс.
+        \item Сравнение результата с эталоном (\texttt{memcmp}).
+    \end{enumerate}
+
+    Выводится сообщение \texttt{SUCCESS} или \texttt{FAILURE} в зависимости от результата.
+
+    \subsection{Функция \texttt{FUN\_0010167a}}
+
+    Функция копирует 128-битный ключ из \texttt{param\_3} в область памяти по смещению \texttt{+0xf0} внутри структуры состояния.
+    Используется для установки внутреннего состояния перед шифрованием.
+
+
+    \section{Функция \texttt{FUN\_0010177e}}
+
+    Реализует цикл побайтового шифрования данных, аналогичный \texttt{AES CTR mode}:
+    \begin{itemize}
+        \item Генерирует ключевой поток путём вызова \texttt{FUN\_001012d2}.
+        \item Инкрементирует счётчик (128-битный nonce/counter).
+        \item XOR-ит ключевой поток с входными данными.
+    \end{itemize}
+
+    Алгоритм работает с блоками по 16 байт, каждый байт обрабатывается в цикле с шагом \texttt{XOR}.
+
+    \subsection{Функция \texttt{FUN\_001012d2}}
+
+    Реализует один раунд симметричного блочного шифра:
+    \begin{enumerate}
+        \item Применяет подстановку байтов (S-box), используя таблицу \texttt{DAT\_00102140}.
+        \item Производит перестановку байтов (аналог ShiftRows в AES).
+        \item Выполняет линейную трансформацию, аналогичную \texttt{MixColumns}.
+        \item Добавляет раундовый ключ через функцию \texttt{FUN\_0010128c}.
+        \item Повторяет 14 раундов, аналогично AES-128.
+    \end{enumerate}
+
+    \subsection{Функция \texttt{FUN\_0010128c}}
+
+    Реализация \texttt{AddRoundKey}, то есть побайтового \texttt{XOR} между состоянием (16 байт) и 16-байтным раундовым ключом из расписания.
+    Индекс раунда задаётся аргументом \texttt{param\_1}.
+
+    \subsection{Функция \texttt{FUN\_001012c3}}
+
+    Реализует умножение байта на 2 в поле $\mathrm{GF}(2^8)$:
+    \[
+        \text{xtime}(b) =
+        \begin{cases}
+            b << 1, & \text{если старший бит } b = 0 \\
+            (b << 1) \oplus 0x1B, & \text{если старший бит } b = 1
+        \end{cases}
+    \]
+
+    Данная операция используется в линейной трансформации \texttt{MixColumns}.
+
+
+    \section{S-box (\texttt{DAT\_00102140})}
+
+    S-box по адресу \texttt{0x00102140} соответствует таблице подстановок, применяемой в AES:
+    \begin{itemize}
+        \item \texttt{DAT\_00102140[0x00] = 0x63} — соответствует \texttt{AES S-box[0x00]}.
+        \item Применяется при преобразовании каждого байта состояния.
+    \end{itemize}
+
+    \subsection*{Вывод}
+
+    В результате анализа установлено, что представленные функции реализуют блочный шифр, чрезвычайно схожий с AES:
+    \begin{itemize}
+        \item Используются фазы: \texttt{SubBytes}, \texttt{ShiftRows}, \texttt{MixColumns}, \texttt{AddRoundKey}.
+        \item Применяется S-box, идентичный AES
+        \item Алгоритм построен на 14 раундах, как в AES-128.
+    \end{itemize}
+
+    Таким образом, можно сделать вывод, что бинарный модуль реализует кастомную или облегчённую версию AES, возможно, с модифицированным раундовым расписанием.
+
+
+    \section{Использование автоматических утилит}
+    Я попробовал установить утилиту binwalk, которая сможет определить, что за механизм шифрования используется в бинарнике
+
+    \begin{verbatim}
+    binwalk -B 2
+    \end{verbatim}
+
+    аутпут:
+    \begin{verbatim}
+    DECIMAL       HEXADECIMAL     DESCRIPTION
+    --------------------------------------------------------------------------------
+    0             0x0             ELF, 64-bit LSB shared object, AMD x86-64, version 1 (SYSV)
+    8256          0x2040          AES Inverse S-Box
+    8512          0x2140          AES S-Box
+    \end{verbatim}
+
+    \begin{itemize}
+        \item ELF-файл (64-битный, LSB, для x86-64) — это стандартный формат исполняемых файлов в Linux
+        \item Найден обратный S-box AES (AES Inverse S-box), используемый при расшифровке
+        \item Найден прямой S-box AES (AES S-box), используемый при шифровании
+    \end{itemize}
+
+    \paragraph{Вывод}
+    Обнаруженные S-box'ы подтверждают, что в бинарнике реализован AES или AES-подобный шифр.
+    Смещения (0x2040 и 0x2140) указывают на начало массивов, которые используются в подстановочных преобразованиях (SubBytes). Это полностью совпадает с тем, что мы ранее увидели в дизассемблированных функциях: S-box по адресу 0x00102140 и его применение в FUN\_001012d2.
+
+
+    \begin{thebibliography}{1}
+        \bibitem{githublink}
+        GitHub Link: https://github.com/MattWay224/reverse-engineering-course
+        В этом репозитории можно найти все лабы и информацию про каждое задание в каждой лабе
+    \end{thebibliography}
+\end{document}
