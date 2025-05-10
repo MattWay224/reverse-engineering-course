@@ -1,0 +1,129 @@
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[russian]{babel}
+
+\title{Анализ бинарного файла - Lab9}
+\author{Matthew Rusakov m.rusakov@innopolis.university SD-03}
+\date{May 2025}
+
+
+\begin{document}
+
+    \maketitle
+
+    \section*{Предисловие}
+    Я изучил бинарник с помощью ghidra и нейросетей.
+    Бинарник реализуюет проверку серийного номера (serial) на основе имени пользователя.
+    Программа принимает два аргумента командной строки: имя пользователя и серийный номер в формате \texttt{XXXX-YYYY-ZZZZ}, где каждая часть интерпретируется как 32-битное шестнадцатеричное число.
+
+
+    \section{Первая функция: \texttt{FUN\_00101100}}
+
+    Основная функция (\texttt{main}) выполняет следующий алгоритм:
+
+    \begin{itemize}
+        \item Проверяет количество аргументов командной строки:
+        \begin{itemize}
+            \item Если \texttt{argc == 1}, выводит строку помощи.
+            \item Если \texttt{argc == 3}, проверяет длину строки серийного номера: должна быть ровно 0x1c (28) символов.
+        \end{itemize}
+        \item При корректной длине парсит серийный номер формата \texttt{\%x-\%x-\%x} в три числа.
+        \item Вызывает функцию \texttt{FUN\_00101470} для проверки соответствия.
+    \end{itemize}
+
+
+    \section{Функция проверки: \texttt{FUN\_00101470}}
+
+    Функция проверяет три значения серийного номера на соответствие значениям, полученным из имени пользователя:
+
+    \begin{enumerate}
+        \item Вызывает \texttt{FUN\_00101380}, которая генерирует MD5-хеш из строки (имени пользователя) с дополнительными преобразованиями.
+        \item Вызывает \texttt{FUN\_001012b0} дважды, чтобы получить два результата по данным серийного номера и статическим таблицам.
+        \item Проверяет, совпадают ли соответствующие значения:
+        \begin{itemize}
+            \item \texttt{param\_2[0] == local\_18}
+            \item \texttt{param\_2[1] == local\_14}
+            \item \texttt{param\_2[2] == local\_10}
+        \end{itemize}
+    \end{enumerate}
+
+
+    \section{Генерация MD5: \texttt{FUN\_00101380}}
+
+    Данная функция формирует MD5-хеш следующим образом:
+
+    \begin{enumerate}
+        \item Проверяет, что длина имени пользователя не превышает 0x80 символов.
+        \item Копирует имя в буфер \texttt{acStack\_1a9}, затем реверсирует строку.
+        \item Конкатенирует реверсированную строку с оригинальной и сохраняет в \texttt{local\_128}.
+        \item Выполняет \texttt{MD5(local\_128, 256)}.
+    \end{enumerate}
+
+    \textbf{Итог:} результат хеша используется как база для сравнения с серийным номером.
+
+
+    \section{Обработка серийного номера: \texttt{FUN\_001012b0}}
+
+    Функция преобразует части серийного номера, используя следующие шаги:
+
+    \begin{itemize}
+        \item Обрабатывает входное значение (серийный номер) и данные таблиц (возможно, секретные, находящиеся по адресу \texttt{DAT\_...}).
+        \item На каждой итерации вызывает \texttt{FUN\_00101290}, которая считает количество единичных битов в числе.
+        \item Используется схема \textbf{битового xor и сдвига}, результатом чего являются два итоговых значения, записываемые в \texttt{param\_1[0]} и \texttt{param\_1[1]}.
+    \end{itemize}
+
+
+    \section{Подсчет битов: \texttt{FUN\_00101290}}
+
+    Обычная функция подсчета установленных битов (popcount) в 32-битном числе.
+    Используется для повышения энтропии и смешивания данных.
+
+
+    \section{Вывод}
+
+    Вся логика программы направлена на проверку того, соответствует ли серийный номер определённому имени пользователя.
+    Алгоритм включает:
+
+    \begin{itemize}
+        \item Хеширование имени с помощью модифицированного MD5.
+        \item Преобразование серийного номера и сравнение с хешом.
+        \item Скрытые данные в памяти программы (таблицы \texttt{DAT\_...}) играют ключевую роль.
+    \end{itemize}
+
+    \subsection*{Итоговая схема}
+
+    \begin{center}
+        \texttt{username} $\xrightarrow{\text{rev+concat}}$ \texttt{MD5} $\rightarrow$ \texttt{target values} \\
+        \texttt{serial} $\xrightarrow{\text{split}}$ \texttt{transformation} $\rightarrow$ \texttt{candidate values} \\
+        \texttt{if match $\Rightarrow$ OK, else $\Rightarrow$ Try again}
+    \end{center}
+    \subsection*{Решение?}
+    Я попробовал сделать генератор на питоне, который будет создавать value для ключа по такому же формату.
+    Я вставлю их в dumps.log в ассемблер виде, а также сам скрипт и массивы байтов вы можете найти на github
+    \begin{verbatim}
+        m@hp:~/PycharmProjects/reverse-engineering-course/Lab9$ python3 lab_data/generator.py
+        Сгенерированный серийный номер для 'admin': 1A50-51E4-4BB4
+        Сгенерированный серийный номер для 'testuser': 6A9E-EE5C-84C2
+        Сгенерированный серийный номер для 'averylongusernameexample': B7D2-A894-1F46
+
+    \end{verbatim}
+
+    \paragraph{HO}
+    я так и не понял, правильные это ключи или нет
+    \begin{verbatim}
+        m@hp:~/PycharmProjects/reverse-engineering-course/Lab9$ ./9 admin 1A50-51E4-4BB4
+        m@hp:~/PycharmProjects/reverse-engineering-course/Lab9$ ./9 matt serial
+        m@hp:~/PycharmProjects/reverse-engineering-course/Lab9$
+    \end{verbatim}
+
+    \begin{thebibliography}{1}
+        \bibitem{githublink}
+        GitHub Link: https://github.com/MattWay224/reverse-engineering-course
+        В этом репозитории можно найти все лабы и информацию про каждое задание в каждой лабе
+    \end{thebibliography}
+\end{document}
